@@ -5,7 +5,6 @@ from repo_insight.embedder import load_embedder
 from repo_insight.retriever import setup_retriever
 from repo_insight.generator import build_qa_chain
 
-persist_dir = "./chroma_db"
 REPO_ROOT = "repos"
 
 def clone_or_pull_repo(repo_url: str, repo_name: str, pull: bool = False) -> str:
@@ -34,7 +33,7 @@ def main():
     repo_name = repo_url.rstrip("/").split("/")[-1].replace(".git", "")
     local_path = clone_or_pull_repo(repo_url, repo_name, pull=args.pull)
 
-    persist_dir = "./chroma_db"  # 後で repo_name などで個別にしてもOK
+    persist_dir = os.path.join("./chroma_db", repo_name)
 
     embedder = load_embedder()
     retriever = setup_retriever(persist_dir, embedder, local_path=local_path, reset=False)
