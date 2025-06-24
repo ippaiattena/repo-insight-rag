@@ -6,10 +6,11 @@ from langchain.embeddings.base import Embeddings
 from repo_insight.embedder import load_embedder
 from repo_insight.utils.project_structure import get_project_structure
 from repo_insight.retriever import load_documents
+from repo_insight.settings import get_shared_settings
 
 def ingest_repo_structure(repo_name: str, local_path: str, persist_dir: str):
     # 1. 構造情報の取得
-    structure_text = get_project_structure(local_path)
+    structure_text = "[PROJECT_STRUCTURE]\nこれはプロジェクト構成情報です。\n" + get_project_structure(local_path)
     if not structure_text.strip():
         print("⚠️ 構造情報が空です。スキップします。")
         return
@@ -28,7 +29,8 @@ def ingest_repo_structure(repo_name: str, local_path: str, persist_dir: str):
     embedder = load_embedder()
     vectordb = Chroma(
         persist_directory=persist_dir,
-        embedding_function=embedder
+        embedding_function=embedder,
+        client_settings=get_shared_settings(persist_dir)
     )
     vectordb.add_documents(splits)
 
@@ -41,8 +43,16 @@ def ingest_all(local_path: str, persist_dir: str, embedder: Embeddings):
     splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=100)
     split_docs = splitter.split_documents(raw_docs)
 
-    vectordb = Chroma(persist_directory=persist_dir, embedding_function=embedder)
+    vectordb = Chroma(
+        persist_directory=persist_dir,
+        embedding_function=embedder,
+        client_settings=get_shared_settings(persist_dir)
+    )
     vectordb.add_documents(split_docs)
 
     # プロジェクト構造も埋め込み
-    ingest_repo_structure(repo_name=os.path.basename(local_path), local_path=local_path, persist_dir=persist_dir)
+    ingest_repo_structure(
+        repo_name=os.path.basename(local_path),
+        local_path=local_path,
+        persist_dir=persist_dir
+    )
