@@ -2,7 +2,7 @@ import os
 import shutil
 from langchain_chroma import Chroma
 from langchain_openai import OpenAIEmbeddings
-from utils.env import load_api_key
+from repo_insight.utils.env import load_api_key
 
 def load_embedder() -> OpenAIEmbeddings:
     """
@@ -26,5 +26,4 @@ def create_vector_store(persist_dir: str, embedder: OpenAIEmbeddings) -> None:
 
     vectordb = Chroma(embedding_function=embedder, persist_directory=persist_dir)
     vectordb.add_texts(["これはサンプル文書です。埋め込みのテストです。"])
-    vectordb.persist()
     print(f"✅ ベクトルストアを保存しました → {persist_dir}")
